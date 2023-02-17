@@ -1,14 +1,26 @@
-import { SafeAreaView, StyleSheet, Text, View } from "react-native";
-import React from "react";
-import people from "../../mocks/people";
+import { StyleSheet, View } from "react-native";
+import React, { useState } from "react";
+import peopleList from "../../mocks/people";
 import Card from "../Card/Card";
 
 const SwiperView = () => {
-  // const peoplee = people.map((person) => <Card {...person} />);
+  const [people, setPeople] = useState(peopleList);
+
+  const handleRemovePerson = (id: number) => {
+    const timeout = setTimeout(() => {
+      setPeople((prevState) => prevState.filter((person) => person.id !== id));
+    }, 100);
+
+    return () => clearTimeout(timeout);
+  };
 
   return (
     <View style={styles.container}>
-      <Card image={people[0].image} name={people[0].name} />
+      <Card
+        handleRemovePerson={handleRemovePerson}
+        person={people[0]}
+        key={people[0].id}
+      />
     </View>
   );
 };
