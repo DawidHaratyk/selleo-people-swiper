@@ -11,6 +11,8 @@ export const generateRandomPerson = (cannotBeId: number) => {
 export const generateTwoPeople = (person: Person) => {
   const peopleCount = 2;
   const displayedPersonIndex = Math.floor(Math.random() * 2);
+  const displayedPersonSwipeDirection: "left" | "right" =
+    displayedPersonIndex === 0 ? "left" : "right";
 
   const randomPerson = generateRandomPerson(person.id);
 
@@ -20,5 +22,5 @@ export const generateTwoPeople = (person: Person) => {
     } else return randomPerson;
   });
 
-  return twoPeople;
+  return { twoPeople, displayedPersonSwipeDirection };
 };

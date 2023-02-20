@@ -1,10 +1,11 @@
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, View, Text } from "react-native";
 import React, { useState } from "react";
 import peopleList from "../../mocks/people";
 import Card from "../Card/Card";
 
 const SwiperView = () => {
   const [people, setPeople] = useState(peopleList);
+  const [result, setResult] = useState(0);
 
   const handleRemovePerson = (id: number) => {
     const timeout = setTimeout(() => {
@@ -14,13 +15,22 @@ const SwiperView = () => {
     return () => clearTimeout(timeout);
   };
 
+  const addPoint = () => {
+    setResult((prevState) => prevState + 1);
+  };
+
   return (
     <View style={styles.container}>
-      <Card
-        handleRemovePerson={handleRemovePerson}
-        person={people[0]}
-        key={people[0].id}
-      />
+      {people.length ? (
+        <Card
+          handleRemovePerson={handleRemovePerson}
+          person={people[0]}
+          addPoint={addPoint}
+          key={people[0].id}
+        />
+      ) : (
+        <Text>Your result is {result}</Text>
+      )}
     </View>
   );
 };
