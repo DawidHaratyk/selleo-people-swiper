@@ -38,14 +38,16 @@ const Card = ({ handleRemovePerson, person, addPoint }: Props) => {
     })
     .onEnd((e) => {
       const swipeDirection = e.translationX > 0 ? "right" : "left";
+      const boundary = 40;
+      const translateX = position.value.x;
 
       if (swipeDirection === displayedPersonSwipeDirection) {
         addPoint();
       }
 
-      if (position.value.x > 40 || position.value.x < -40) {
+      if (translateX > boundary || translateX < -boundary) {
         position.value = {
-          x: withTiming(position.value.x > 0 ? END_POSITION : -END_POSITION, {
+          x: withTiming(translateX > 0 ? END_POSITION : -END_POSITION, {
             duration: 100,
           }),
           y: withTiming(0, { duration: 300 }),
