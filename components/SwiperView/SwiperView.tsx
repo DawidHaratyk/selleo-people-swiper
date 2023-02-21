@@ -7,27 +7,16 @@ const SwiperView = () => {
   const [people, setPeople] = useState(peopleList);
   const [result, setResult] = useState(0);
 
-  const handleRemovePerson = (id: number) => {
-    const timeout = setTimeout(() => {
-      setPeople((prevState) => prevState.filter((person) => person.id !== id));
-    }, 100);
+  const onSwipe = (id: number, shouldAddPoint: boolean) => {
+    setPeople((prevState) => prevState.filter((person) => person.id !== id));
 
-    return () => clearTimeout(timeout);
-  };
-
-  const addPoint = () => {
-    setResult((prevState) => prevState + 1);
+    shouldAddPoint && setResult((prevState) => prevState + 1);
   };
 
   return (
     <View style={styles.container}>
       {people.length ? (
-        <Card
-          handleRemovePerson={handleRemovePerson}
-          person={people[0]}
-          addPoint={addPoint}
-          key={people[0].id}
-        />
+        <Card onSwipe={onSwipe} person={people[0]} key={people[0].id} />
       ) : (
         <Text>Your result is {result}</Text>
       )}
@@ -43,5 +32,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     width: "100%",
     height: "100%",
+  },
+  card: {
+    width: 50,
+    height: 50,
+    backgroundColor: "black",
   },
 });

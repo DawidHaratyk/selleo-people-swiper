@@ -1,23 +1,26 @@
-import { StyleSheet, View, Image, Text } from "react-native";
+import { StyleSheet, Image, Text } from "react-native";
 import React from "react";
 import { Person } from "../../types";
 import { generateTwoPeople } from "./utils/utils";
 import Animated, {
+  Easing,
   Extrapolate,
   interpolate,
   useAnimatedStyle,
   useSharedValue,
+  BounceInUp,
   withTiming,
+  runOnJS,
 } from "react-native-reanimated";
+
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 
 type Props = {
-  handleRemovePerson: (id: number) => void;
+  onSwipe: (id: number, shouldAddPoint: boolean) => void;
   person: Person;
-  addPoint: () => void;
 };
 
-const Card = ({ handleRemovePerson, person, addPoint }: Props) => {
+const Card = ({ onSwipe, person }: Props) => {
   const { twoPeople, displayedPersonSwipeDirection } =
     generateTwoPeople(person);
 
@@ -41,20 +44,27 @@ const Card = ({ handleRemovePerson, person, addPoint }: Props) => {
       const boundary = 40;
       const translateX = position.value.x;
 
-      if (swipeDirection === displayedPersonSwipeDirection) {
-        addPoint();
-      }
-
       if (translateX > boundary || translateX < -boundary) {
         position.value = {
-          x: withTiming(translateX > 0 ? END_POSITION : -END_POSITION, {
-            duration: 100,
-          }),
-          y: withTiming(0, { duration: 300 }),
-          currentHoldY: withTiming(0, { duration: 300 }),
-        };
+          x: withTiming(
+            translateX > 0 ? END_POSITION : -END_POSITION,
+            {
+              duration: 1000,
+              easing: Easing.out(Easing.exp),
+            },
+            () => {
+              const shouldAddPoint =
+                swipeDirection === displayedPersonSwipeDirection;
 
-        handleRemovePerson(person.id);
+              runOnJS(onSwipe)(person.id, shouldAddPoint);
+            }
+          ),
+          y: withTiming(0, { duration: 1000, easing: Easing.out(Easing.exp) }),
+          currentHoldY: withTiming(0, {
+            duration: 1000,
+            easing: Easing.out(Easing.exp),
+          }),
+        };
       } else {
         position.value = {
           x: withTiming(0, { duration: 100 }),
@@ -90,9 +100,12 @@ const Card = ({ handleRemovePerson, person, addPoint }: Props) => {
   });
 
   return (
-    <View style={styles.container}>
+    <Animated.View style={[styles.container]}>
       <GestureDetector gesture={panGesture}>
-        <Animated.View style={[styles.card, animatedStyle]}>
+        <Animated.View
+          style={[styles.card, animatedStyle]}
+          entering={BounceInUp}
+        >
           <Text style={[styles.name, styles.firstName]}>
             {twoPeople[0].name}
           </Text>
@@ -102,7 +115,7 @@ const Card = ({ handleRemovePerson, person, addPoint }: Props) => {
           <Image source={person.image} style={styles.image} />
         </Animated.View>
       </GestureDetector>
-    </View>
+    </Animated.View>
   );
 };
 
@@ -154,4 +167,15 @@ const styles = StyleSheet.create({
     height: 660,
     maxHeight: 720,
   },
+  // container: {
+  //   position: "absolute",
+  //   top: "12%",
+  //   left: "8%",
+  //   right: "8%",
+  //   minWidth: 300,
+  //   width: 350,
+  //   maxWidth: "92%",
+  //   height: 660,
+  //   maxHeight: 720,
+  // },
 });
