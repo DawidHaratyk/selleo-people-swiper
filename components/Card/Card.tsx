@@ -24,59 +24,58 @@ const Card = ({ onSwipe, person }: Props) => {
   const { twoPeople, displayedPersonSwipeDirection } =
     generateTwoPeople(person);
 
-  const END_POSITION = 400;
-  const position = useSharedValue({
-    x: 0,
-    y: 0,
-    currentHoldY: 0,
-  });
+  const END_POSITION = 600;
+
+  const positionX = useSharedValue(0);
+  const positionY = useSharedValue(0);
+  const currentHoldY = useSharedValue(0);
 
   const panGesture = Gesture.Pan()
     .onUpdate((e) => {
-      position.value = {
-        x: e.translationX,
-        y: e.translationY,
-        currentHoldY: e.y,
-      };
+      positionX.value = e.translationX;
+      positionY.value = e.translationY;
+      currentHoldY.value = e.y;
     })
     .onEnd((e) => {
       const swipeDirection = e.translationX > 0 ? "right" : "left";
       const boundary = 40;
-      const translateX = position.value.x;
+      const translateX = positionX.value;
 
       if (translateX > boundary || translateX < -boundary) {
-        position.value = {
-          x: withTiming(
-            translateX > 0 ? END_POSITION : -END_POSITION,
-            {
-              duration: 1000,
-              easing: Easing.out(Easing.exp),
-            },
-            () => {
-              const shouldAddPoint =
-                swipeDirection === displayedPersonSwipeDirection;
-
-              runOnJS(onSwipe)(person.id, shouldAddPoint);
-            }
-          ),
-          y: withTiming(0, { duration: 1000, easing: Easing.out(Easing.exp) }),
-          currentHoldY: withTiming(0, {
+        positionX.value = withTiming(
+          positionX.value > 0 ? END_POSITION : -END_POSITION,
+          {
             duration: 1000,
             easing: Easing.out(Easing.exp),
-          }),
-        };
+          },
+          () => {
+            const shouldAddPoint =
+              swipeDirection === displayedPersonSwipeDirection;
+
+            runOnJS(onSwipe)(person.id, shouldAddPoint);
+          }
+        );
+
+        positionY.value = withTiming(0, {
+          duration: 1000,
+          easing: Easing.out(Easing.exp),
+        });
       } else {
-        position.value = {
-          x: withTiming(0, { duration: 100 }),
-          y: withTiming(0, { duration: 100 }),
-          currentHoldY: withTiming(0, { duration: 100 }),
-        };
+        positionX.value = withTiming(0, {
+          duration: 300,
+          easing: Easing.out(Easing.exp),
+        });
+
+        positionY.value = withTiming(0, {
+          duration: 300,
+          easing: Easing.out(Easing.exp),
+        });
       }
     });
 
   const animatedStyle = useAnimatedStyle(() => {
     const rotate = interpolate(
-      position.value.x,
+      positionX.value,
       [-END_POSITION, 0, END_POSITION],
       [-30, 0, 30],
       {
@@ -87,13 +86,10 @@ const Card = ({ onSwipe, person }: Props) => {
 
     return {
       transform: [
-        { translateX: position.value.x },
-        { translateY: position.value.y },
+        { translateX: positionX.value },
+        { translateY: positionY.value },
         {
-          rotate:
-            position.value.currentHoldY > 330
-              ? `${-rotate}deg`
-              : `${rotate}deg`,
+          rotate: currentHoldY.value > 330 ? `${-rotate}deg` : `${rotate}deg`,
         },
       ],
     };
@@ -161,21 +157,11 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: "12%",
     left: "8%",
+    right: "8%",
     minWidth: 300,
     width: 350,
-    maxWidth: "94%",
+    maxWidth: "92%",
     height: 660,
     maxHeight: 720,
   },
-  // container: {
-  //   position: "absolute",
-  //   top: "12%",
-  //   left: "8%",
-  //   right: "8%",
-  //   minWidth: 300,
-  //   width: 350,
-  //   maxWidth: "92%",
-  //   height: 660,
-  //   maxHeight: 720,
-  // },
 });
